@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% load widget_tweaks %}
+
+{% block content %}
+<div class="isolate relative px-6 mt-16 sm:mt-24 lg:px-8">
+  <div class="mx-auto max-w-md">
+    <h1 class="mb-8 text-3xl font-bold tracking-tight text-center text-gray-900 sm:text-4xl">
+      Create a New Project
+    </h1>
+    <form method="post" enctype="multipart/form-data" class="space-y-6">
+      {% csrf_token %}
+      {{ form.non_field_errors | safe }}
+
+      <div>
+        {{ form.name.errors | safe }}
+        <label for="{{ form.name.id_for_label }}" class="block text-sm font-medium text-gray-700">Project Name</label>
+        <div class="mt-1">
+          {% render_field form.name class="block px-3 py-2 w-full placeholder-gray-400 rounded-md border border-gray-300 shadow-sm appearance-none focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm" placeholder="Enter project name" %}
+        </div>
+      </div>
+
+      <div>
+        {{ form.slug.errors | safe }}
+        <label for="{{ form.slug.id_for_label }}" class="block text-sm font-medium text-gray-700">Project URL</label>
+        <div class="flex mt-1 rounded-md shadow-sm">
+          <span class="inline-flex items-center px-3 text-sm text-gray-500 bg-gray-50 rounded-l-md border border-r-0 border-gray-300">
+            statushen.com/
+          </span>
+          {% render_field form.slug class="block flex-1 px-3 py-2 w-full rounded-none rounded-r-md border border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" placeholder="your-project-slug" %}
+        </div>
+      </div>
+
+      <div>
+        {{ form.icon.errors | safe }}
+        <label for="{{ form.icon.id_for_label }}" class="block text-sm font-medium text-gray-700">Project Icon</label>
+        <div class="mt-1">
+          {% render_field form.icon class="text-sm text-gray-900" %}
+        </div>
+      </div>
+
+      <div>
+        {{ form.public.errors | safe }}
+        <div class="flex items-start">
+          <div class="flex items-center h-5">
+            {% render_field form.public class="w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500" %}
+          </div>
+          <div class="ml-3 text-sm">
+            <label for="{{ form.public.id_for_label }}" class="font-medium text-gray-700">Public Project</label>
+            <p class="text-gray-500">Make this project visible to everyone. You can change this later.</p>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <button type="submit" class="flex justify-center px-4 py-2 w-full text-sm font-medium text-white bg-indigo-600 rounded-md border border-transparent shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+          Create Project
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const nameInput = document.getElementById('{{ form.name.id_for_label }}');
+    const slugInput = document.getElementById('{{ form.slug.id_for_label }}');
+
+    nameInput.addEventListener('input', function() {
+        const slug = this.value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+        slugInput.value = slug;
+    });
+});
+</script>
+{% endblock content %}
