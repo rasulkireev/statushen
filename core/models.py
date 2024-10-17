@@ -122,11 +122,12 @@ class Service(BaseModel):
     is_public = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
 
+    class Meta:
+        unique_together = ['project', 'name']
+
     def __str__(self):
         return f"{self.name} ({self.get_type_display()})"
 
-    class Meta:
-        unique_together = ['project', 'name']
 
 
 class ServiceStatus(BaseModel):
