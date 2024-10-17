@@ -34,15 +34,16 @@ class HomeView(StatusSummaryMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        user = self.request.user
 
-        try:
+        if user.is_authenticated:
             profile = self.request.user.profile
             user_projects = Project.objects.filter(profile=profile).prefetch_related('services', 'services__statuses')
 
             for project in user_projects:
                 self.add_status_summary_to_services(project.services.all(), number_of_sticks=100)
-        except Profile.DoesNotExist:
-            user_projects = None
+
+            context["user_projects"] = user_projects
 
         payment_status = self.request.GET.get("payment")
         if payment_status == "success":
@@ -51,7 +52,6 @@ class HomeView(StatusSummaryMixin, TemplateView):
         elif payment_status == "failed":
             messages.error(self.request, "Something went wrong with the payment.")
 
-        context["user_projects"] = user_projects
 
         return context
 
