@@ -38,9 +38,9 @@ if [ "$server" = true ]; then
     python manage.py migrate
     export OTEL_SERVICE_NAME=${PROJECT_NAME}_${ENVIRONMENT:-dev}
     export OTEL_RESOURCE_ATTRIBUTES=service.name=${PROJECT_NAME}_${ENVIRONMENT:-dev}
-    opentelemetry-instrumentgunicorn ${PROJECT_NAME}.wsgi:application --bind 0.0.0.0:80 --workers 3 --threads 2 --reload
+    opentelemetry-instrument gunicorn ${PROJECT_NAME}.wsgi:application --bind 0.0.0.0:80 --workers 3 --threads 2 --reload
 else
     export OTEL_SERVICE_NAME="${PROJECT_NAME}_${ENVIRONMENT:-dev}_workers"
     export OTEL_RESOURCE_ATTRIBUTES=service.name=${PROJECT_NAME}_${ENVIRONMENT:-dev}_workers
-    opentelemetry-instrumentpython manage.py qcluster
+    opentelemetry-instrument python manage.py qcluster
 fi
