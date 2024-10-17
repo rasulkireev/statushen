@@ -312,12 +312,6 @@ SENTRY_DSN = env("SENTRY_DSN")
 if ENVIRONMENT == "prod" and SENTRY_DSN:
     sentry_sdk.init(dsn=env("SENTRY_DSN"))
 
-
-POSTHOG_API_KEY = env("POSTHOG_API_KEY")
-if ENVIRONMENT == "prod" and POSTHOG_API_KEY:
-    sentry_sdk.init(dsn=env("POSTHOG_API_KEY"))
-
-
 BUTTONDOWN_API_KEY=env("BUTTONDOWN_API_KEY")
 
 STRIPE_LIVE_SECRET_KEY = env("STRIPE_LIVE_SECRET_KEY")
