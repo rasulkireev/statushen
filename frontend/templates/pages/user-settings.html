@@ -57,28 +57,7 @@
     <div class="p-6 mt-6 mb-8 bg-gray-50 rounded-lg">
       <h3 class="mb-4 text-lg font-medium leading-6 text-gray-900">Your Projects</h3>
       {% if user_projects %}
-        <ul class="divide-y divide-gray-200">
-          {% for project in user_projects %}
-            <li class="flex justify-between items-center py-4">
-              <div class="flex items-center">
-                <div class="flex-shrink-0 h-10 w-auto max-w-[100px] mr-4">
-                  {% if project.icon %}
-                    <img class="object-contain w-auto max-w-full h-10" src="{{ project.icon.url }}" alt="{{ project.name }} icon">
-                  {% else %}
-                    <div class="flex justify-center items-center w-10 h-10 bg-gray-300 rounded">
-                      <span class="font-bold text-gray-600">{{ project.name|first|upper }}</span>
-                    </div>
-                  {% endif %}
-                </div>
-                <div>
-                  <p class="text-sm font-medium text-gray-900">{{ project.name }}</p>
-                  <p class="text-sm text-gray-500">{{ project.slug }}</p>
-                </div>
-              </div>
-              <a href="{% url 'project-status-page' slug=project.slug %}" class="text-sm text-indigo-600 hover:text-indigo-800">View</a>
-            </li>
-          {% endfor %}
-        </ul>
+        {% include 'components/projects_list.html' with user_projects=user_projects %}
       {% else %}
         <p class="text-gray-500">You haven't created any projects yet.</p>
       {% endif %}

@@ -3,6 +3,21 @@
 {% block content %}
 <div class="isolate relative px-6 mt-16 sm:mt-24 lg:px-8">
   <div class="isolate relative px-6 mt-16 sm:mt-24 lg:px-8">
+    {% if user.is_authenticated and user_projects %}
+        <!-- Projects Section -->
+        <div class="mx-auto max-w-4xl text-center">
+          <div class="p-6 -mt-16 mb-8">
+            <h1 class="mx-auto mb-6 max-w-2xl text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl"">Your Projects</h1>
+            {% include 'components/projects_list.html' with user_projects=user_projects %}
+            <div class="mt-6">
+              <a href="{% url 'create-project' %}" class="inline-flex justify-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md border border-transparent shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                Create New Project
+              </a>
+            </div>
+          </div>
+        </div>
+        <!-- End of Projects Section -->
+    {% else %}
     <div class="mx-auto text-center">
         <h1 class="mx-auto mb-6 max-w-2xl text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">
           Don't Let Downtime Ruffle Your Feathers!
@@ -25,6 +40,7 @@
           {% endif %}
         </div>
     </div>
+    {% endif %}
   </div>
 </div>
 
