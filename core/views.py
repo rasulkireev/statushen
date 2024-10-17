@@ -1,5 +1,7 @@
+from datetime import timedelta
 from urllib.parse import urlencode
 
+from core.views_utils import StatusSummaryMixin
 import stripe
 
 from allauth.account.models import EmailAddress
@@ -11,11 +13,13 @@ from django.shortcuts import redirect
 from django.conf import settings
 from django.contrib import messages
 from django.urls import reverse, reverse_lazy
-from django.views.generic import TemplateView, UpdateView, ListView, DetailView, CreateView
+from django.utils import timezone
+from django.views.generic import TemplateView, UpdateView, ListView, DetailView, CreateView, FormView
+from django.shortcuts import get_object_or_404
 
 from djstripe import models as djstripe_models
 
-from core.forms import ProfileUpdateForm
+from core.forms import ProfileUpdateForm, ServiceForm
 from core.models import Profile, BlogPost, Project
 from core.utils import check_if_profile_has_pro_subscription
 
@@ -25,11 +29,20 @@ stripe.api_key = settings.STRIPE_SECRET_KEY
 
 logger = get_statushen_logger(__name__)
 
-class HomeView(TemplateView):
+class HomeView(StatusSummaryMixin, TemplateView):
     template_name = "pages/home.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+
+        try:
+            profile = self.request.user.profile
+            user_projects = Project.objects.filter(profile=profile).prefetch_related('services', 'services__statuses')
+
+            for project in user_projects:
+                self.add_status_summary_to_services(project.services.all(), number_of_sticks=100)
+        except Profile.DoesNotExist:
+            user_projects = None
 
         payment_status = self.request.GET.get("payment")
         if payment_status == "success":
@@ -38,10 +51,12 @@ class HomeView(TemplateView):
         elif payment_status == "failed":
             messages.error(self.request, "Something went wrong with the payment.")
 
+        context["user_projects"] = user_projects
 
         return context
 
-class UserSettingsView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
+
+class UserSettingsView(StatusSummaryMixin, LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     login_url = "account_login"
     model = Profile
     form_class = ProfileUpdateForm
@@ -61,7 +76,12 @@ class UserSettingsView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
         context["email_verified"] = email_address.verified
         context["resend_confirmation_url"] = reverse("resend_confirmation")
         context["has_subscription"] = profile.subscription is not None
-        context["user_projects"] = profile.projects.all()
+
+        user_projects = profile.projects.all().prefetch_related('services', 'services__statuses')
+        for project in user_projects:
+            self.add_status_summary_to_services(project.services.all())
+
+        context["user_projects"] = user_projects
 
         return context
 
@@ -181,3 +201,31 @@ class ProjectStatusPageView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         return context
+
+
+class ProjectSettingsView(StatusSummaryMixin, LoginRequiredMixin, FormView):
+    template_name = 'projects/project_settings.html'
+    form_class = ServiceForm
+
+    def dispatch(self, request, *args, **kwargs):
+        self.project = get_object_or_404(Project, slug=self.kwargs['slug'])
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['project'] = self.project
+        services = self.project.services.all()
+
+        self.add_status_summary_to_services(services)
+        context['services'] = services
+        return context
+
+    def form_valid(self, form):
+        service = form.save(commit=False)
+        service.project = self.project
+        service.save()
+        messages.success(self.request, f"Service '{service.name}' has been successfully created!")
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse('project-settings', kwargs={'slug': self.project.slug})

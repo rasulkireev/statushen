@@ -1,7 +1,7 @@
 from allauth.account.forms import LoginForm, SignupForm
 from django import forms
 
-from core.models import Profile
+from core.models import Profile, Service
 from core.utils import DivErrorList
 
 
@@ -43,3 +43,12 @@ class ProfileUpdateForm(forms.ModelForm):
             user.save()
             profile.save()
         return profile
+
+
+class ServiceForm(forms.ModelForm):
+    class Meta:
+        model = Service
+        fields = ['name', 'type', 'url', 'check_interval', 'additional_data', 'is_public', 'is_active']
+        widgets = {
+            'additional_data': forms.Textarea(attrs={'rows': 4}),
+        }

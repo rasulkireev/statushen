@@ -22,4 +22,6 @@ urlpatterns = [
     # app
     path("create-project/", views.CreateProjectView.as_view(), name="create-project"),
     path("<slug:slug>/", views.ProjectStatusPageView.as_view(), name="project-status-page"),
+    path("<slug:slug>/settings/", views.ProjectSettingsView.as_view(), name="project-settings"),
+
 ]

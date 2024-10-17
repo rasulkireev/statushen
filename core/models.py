@@ -1,6 +1,7 @@
 from django.contrib.auth.models import User
 from django.db import models
 from django.urls import reverse
+from django.utils import timezone
 
 from core.base_models import BaseModel
 from core.model_utils import generate_random_key
@@ -86,8 +87,8 @@ class BlogPost(BaseModel):
 
 class Project(BaseModel):
     profile = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name="projects")
-    name = models.CharField(max_length=250)
-    slug = models.SlugField(max_length=250)
+    name = models.CharField(max_length=250, unique=True)
+    slug = models.SlugField(max_length=250, unique=True)
     public = models.BooleanField(default=False)
     icon = models.ImageField(upload_to="project_icons/", blank=True)
 
@@ -96,3 +97,67 @@ class Project(BaseModel):
 
     def get_absolute_url(self):
         return reverse("project-status-page", kwargs={"slug": self.slug})
+
+
+
+class Service(BaseModel):
+    class ServiceType(models.TextChoices):
+        WEBSITE = 'WEBSITE', 'Website'
+        API = 'API', 'API'
+
+    project = models.ForeignKey('Project', on_delete=models.CASCADE, related_name="services")
+    name = models.CharField(max_length=250)
+    type = models.CharField(
+        max_length=20,
+        choices=ServiceType.choices,
+        default=ServiceType.WEBSITE
+    )
+    url = models.URLField(max_length=500, blank=True)
+    check_interval = models.PositiveIntegerField(default=5, help_text="Check interval in minutes")
+    additional_data = models.JSONField(
+        blank=True,
+        null=True,
+        help_text="Additional data for service checks (e.g., auth headers, connection strings)"
+    )
+    is_public = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return f"{self.name} ({self.get_type_display()})"
+
+    class Meta:
+        unique_together = ['project', 'name']
+
+
+class ServiceStatus(BaseModel):
+    class StatusChoices(models.TextChoices):
+        UP = 'UP', 'Up'
+        DOWN = 'DOWN', 'Down'
+        DEGRADED = 'DEGRADED', 'Degraded'
+        UNKNOWN = 'UNKNOWN', 'Unknown'
+
+    service = models.ForeignKey('Service', on_delete=models.CASCADE, related_name='statuses')
+    status = models.CharField(max_length=20, choices=StatusChoices.choices, default=StatusChoices.UNKNOWN)
+    response_time = models.FloatField(null=True, blank=True, help_text="Response time in milliseconds")
+    status_code = models.IntegerField(null=True, blank=True)
+    error_message = models.TextField(blank=True)
+    checked_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        ordering = ['-checked_at']
+        get_latest_by = 'checked_at'
+
+    def __str__(self):
+        return f"{self.service.name} - {self.status} at {self.checked_at}"
+
+    @property
+    def is_up(self):
+        return self.status == self.StatusChoices.UP
+
+    @property
+    def is_down(self):
+        return self.status == self.StatusChoices.DOWN
+
+    @property
+    def is_degraded(self):
+        return self.status == self.StatusChoices.DEGRADED
