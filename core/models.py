@@ -51,6 +51,7 @@ class Profile(BaseModel):
         return latest_transition.to_state
 
 
+
 class ProfileStates(models.TextChoices):
     STRANGER = "stranger"
     SIGNED_UP = "signed_up"
@@ -59,9 +60,8 @@ class ProfileStates(models.TextChoices):
     CHURNED = "churned"
     ACCOUNT_DELETED = "account_deleted"
 
-
 class ProfileStateTransition(BaseModel):
-    profile = models.ForeignKey(Profile, null=True, on_delete=models.SET_NULL, related_name="state_transitions")
+    profile = models.ForeignKey(Profile, null=True, blank=True, on_delete=models.SET_NULL, related_name="state_transitions")
     from_state = models.CharField(max_length=255, choices=ProfileStates.choices)
     to_state = models.CharField(max_length=255, choices=ProfileStates.choices)
     backup_profile_id = models.IntegerField()
