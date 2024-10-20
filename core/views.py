@@ -202,18 +202,13 @@ class ProjectStatusPageView(StatusSummaryMixin, DetailView):
         context = super().get_context_data(**kwargs)
         services = self.object.services.all()
 
-        ninety_days_ago = timezone.now() - timedelta(days=90)
+        # Add status summary to services
+        self.add_status_summary_to_services(services)
 
-        all_statuses = []
-        for service in services:
-            service_statuses = service.statuses.filter(checked_at__gte=ninety_days_ago).order_by('checked_at')
-            service.status_summary = self.get_status_summary(service_statuses, timezone.now(), ninety_days_ago, 90)
-            service.current_status = service_statuses.last().status if service_statuses.exists() else 'unknown'
-            all_statuses.extend(service_statuses)
+        # Get overall project status
+        context['project_overall_status'] = self.get_overall_project_status(services)
 
-        context['project_overall_status'] = self.get_status_summary(all_statuses, timezone.now(), ninety_days_ago, 90)
         context['services'] = services
-
         return context
 
 

@@ -1,5 +1,6 @@
 from django.utils import timezone
 from datetime import timedelta
+from django.db.models import Q
 
 class StatusSummaryMixin:
     @staticmethod
@@ -12,15 +13,15 @@ class StatusSummaryMixin:
             stick_end = start_time + interval * (i + 1)
             stick_start = start_time + interval * i
 
-            stick_statuses = statuses.filter(checked_at__gte=stick_start, checked_at__lt=stick_end)
+            stick_statuses = [s for s in statuses if stick_start <= s.checked_at < stick_end]
 
-            if stick_statuses.exists():
+            if stick_statuses:
                 # Prioritize 'down' status, then 'degraded', then 'up'
-                if stick_statuses.filter(status='DOWN').exists():
+                if any(s.status == 'DOWN' for s in stick_statuses):
                     summary.append('down')
-                elif stick_statuses.filter(status='DEGRADED').exists():
+                elif any(s.status == 'DEGRADED' for s in stick_statuses):
                     summary.append('degraded')
-                elif stick_statuses.filter(status='UP').exists():
+                elif any(s.status == 'UP' for s in stick_statuses):
                     summary.append('up')
                 else:
                     summary.append('unknown')
@@ -34,11 +35,11 @@ class StatusSummaryMixin:
         start_time = end_time - timedelta(days=days)
 
         for service in services:
-            statuses = service.statuses.filter(checked_at__gte=start_time).order_by('checked_at')
+            statuses = list(service.statuses.filter(checked_at__gte=start_time).order_by('checked_at'))
             service.status_summary = self.get_status_summary(statuses, end_time, start_time, number_of_sticks)
 
             # Add current status
-            latest_status = statuses.last()
+            latest_status = statuses[-1] if statuses else None
             service.current_status = latest_status.status.lower() if latest_status else 'unknown'
 
     def get_overall_project_status(self, services, days=90, number_of_sticks=90):
@@ -47,7 +48,7 @@ class StatusSummaryMixin:
 
         all_statuses = []
         for service in services:
-            service_statuses = service.statuses.filter(checked_at__gte=start_time)
+            service_statuses = list(service.statuses.filter(checked_at__gte=start_time))
             all_statuses.extend(service_statuses)
 
         return self.get_status_summary(all_statuses, end_time, start_time, number_of_sticks)
