@@ -1,33 +1,28 @@
-from datetime import timedelta
 from urllib.parse import urlencode
 
-from core.views_utils import StatusSummaryMixin
 import stripe
-
 from allauth.account.models import EmailAddress
 from allauth.account.utils import send_email_confirmation
+from django.conf import settings
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
-from django.shortcuts import redirect
-from django.conf import settings
-from django.contrib import messages
+from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse, reverse_lazy
-from django.utils import timezone
-from django.views.generic import TemplateView, UpdateView, ListView, DetailView, CreateView, FormView
-from django.shortcuts import get_object_or_404
-
+from django.views.generic import CreateView, DetailView, FormView, ListView, TemplateView, UpdateView
 from djstripe import models as djstripe_models
 
 from core.forms import ProfileUpdateForm, ServiceForm
-from core.models import Profile, BlogPost, Project
+from core.models import BlogPost, Profile, Project
 from core.utils import check_if_profile_has_pro_subscription
-
+from core.views_utils import StatusSummaryMixin
 from statushen.utils import get_statushen_logger
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
 logger = get_statushen_logger(__name__)
+
 
 class HomeView(StatusSummaryMixin, TemplateView):
     template_name = "pages/home.html"
@@ -38,7 +33,7 @@ class HomeView(StatusSummaryMixin, TemplateView):
 
         if user.is_authenticated:
             profile = self.request.user.profile
-            user_projects = Project.objects.filter(profile=profile).prefetch_related('services', 'services__statuses')
+            user_projects = Project.objects.filter(profile=profile).prefetch_related("services", "services__statuses")
 
             for project in user_projects:
                 self.add_status_summary_to_services(project.services.all(), number_of_sticks=100)
@@ -51,7 +46,6 @@ class HomeView(StatusSummaryMixin, TemplateView):
             context["show_confetti"] = True
         elif payment_status == "failed":
             messages.error(self.request, "Something went wrong with the payment.")
-
 
         return context
 
@@ -77,7 +71,7 @@ class UserSettingsView(StatusSummaryMixin, LoginRequiredMixin, SuccessMessageMix
         context["resend_confirmation_url"] = reverse("resend_confirmation")
         context["has_subscription"] = profile.subscription is not None
 
-        user_projects = profile.projects.all().prefetch_related('services', 'services__statuses')
+        user_projects = profile.projects.all().prefetch_related("services", "services__statuses")
         for project in user_projects:
             self.add_status_summary_to_services(project.services.all())
 
@@ -182,9 +176,9 @@ class BlogPostView(DetailView):
 
 class CreateProjectView(LoginRequiredMixin, CreateView):
     model = Project
-    template_name = 'projects/create_project.html'
-    fields = ['name', 'slug', 'icon', 'public']
-    success_url = reverse_lazy('home')
+    template_name = "projects/create_project.html"
+    fields = ["name", "slug", "icon", "public"]
+    success_url = reverse_lazy("home")
 
     def form_valid(self, form):
         form.instance.profile = self.request.user.profile
@@ -193,31 +187,40 @@ class CreateProjectView(LoginRequiredMixin, CreateView):
         return response
 
 
-class ProjectStatusPageView(DetailView):
+class ProjectStatusPageView(StatusSummaryMixin, DetailView):
     model = Project
-    template_name = 'projects/project_status.html'
-    context_object_name = 'project'
+    template_name = "projects/project_status.html"
+    context_object_name = "project"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        services = self.object.services.all()
+
+        # Add status summary to services (24 hours, 24 sticks)
+        self.add_status_summary_to_services(services, days=1, number_of_sticks=45)
+
+        # Get overall project status (90 days, 90 sticks)
+        context["project_overall_status"] = self.get_overall_project_status(services, days=90, number_of_sticks=90)
+
+        context["services"] = services
         return context
 
 
 class ProjectSettingsView(StatusSummaryMixin, LoginRequiredMixin, FormView):
-    template_name = 'projects/project_settings.html'
+    template_name = "projects/project_settings.html"
     form_class = ServiceForm
 
     def dispatch(self, request, *args, **kwargs):
-        self.project = get_object_or_404(Project, slug=self.kwargs['slug'])
+        self.project = get_object_or_404(Project, slug=self.kwargs["slug"])
         return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['project'] = self.project
+        context["project"] = self.project
         services = self.project.services.all()
 
         self.add_status_summary_to_services(services)
-        context['services'] = services
+        context["services"] = services
         return context
 
     def form_valid(self, form):
@@ -228,4 +231,4 @@ class ProjectSettingsView(StatusSummaryMixin, LoginRequiredMixin, FormView):
         return super().form_valid(form)
 
     def get_success_url(self):
-        return reverse('project-settings', kwargs={'slug': self.project.slug})
+        return reverse("project-settings", kwargs={"slug": self.project.slug})
