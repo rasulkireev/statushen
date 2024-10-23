@@ -236,7 +236,7 @@ class ProjectSettingsView(StatusSummaryMixin, LoginRequiredMixin, UpdateView):
 
     def post(self, request, *args, **kwargs):
         self.object = self.get_object()
-        if "service_form" in request.POST:
+        if "name" in request.POST:  # Check for a field from the service form
             service_form = ServiceForm(request.POST)
             if service_form.is_valid():
                 service = service_form.save(commit=False)
@@ -244,5 +244,10 @@ class ProjectSettingsView(StatusSummaryMixin, LoginRequiredMixin, UpdateView):
                 service.save()
                 messages.success(request, f"Service '{service.name}' has been successfully created!")
                 return redirect(self.get_success_url())
+            else:
+                # If the form is invalid, re-render the page with the form errors
+                context = self.get_context_data(object=self.object)
+                context["service_form"] = service_form
+                return self.render_to_response(context)
         else:
             return super().post(request, *args, **kwargs)
