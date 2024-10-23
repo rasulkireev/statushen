@@ -8,12 +8,12 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import redirect
 from django.urls import reverse, reverse_lazy
-from django.views.generic import CreateView, DetailView, FormView, ListView, TemplateView, UpdateView
+from django.views.generic import CreateView, DetailView, ListView, TemplateView, UpdateView
 from djstripe import models as djstripe_models
 
-from core.forms import ProfileUpdateForm, ServiceForm
+from core.forms import ProfileUpdateForm, ProjectUpdateForm, ServiceForm
 from core.models import BlogPost, Profile, Project
 from core.utils import check_if_profile_has_pro_subscription
 from core.views_utils import StatusSummaryMixin
@@ -177,7 +177,7 @@ class BlogPostView(DetailView):
 class CreateProjectView(LoginRequiredMixin, CreateView):
     model = Project
     template_name = "projects/create_project.html"
-    fields = ["name", "slug", "icon", "public"]
+    fields = ["name", "slug", "icon", "public", "url"]
     success_url = reverse_lazy("home")
 
     def form_valid(self, form):
@@ -196,39 +196,53 @@ class ProjectStatusPageView(StatusSummaryMixin, DetailView):
         context = super().get_context_data(**kwargs)
         services = self.object.services.all()
 
-        # Add status summary to services (24 hours, 24 sticks)
         self.add_status_summary_to_services(services, days=1, number_of_sticks=45)
-
-        # Get overall project status (90 days, 90 sticks)
         context["project_overall_status"] = self.get_overall_project_status(services, days=90, number_of_sticks=90)
 
+        for service in services:
+            service.response_time_data = self.get_service_response_time_data(service)
+
+        # Get active and recently resolved incidents
+        active_incidents, recently_resolved = self.get_incidents(services)
+
         context["services"] = services
+        context["active_incidents"] = active_incidents
+        context["recently_resolved"] = recently_resolved
+
         return context
 
 
-class ProjectSettingsView(StatusSummaryMixin, LoginRequiredMixin, FormView):
+class ProjectSettingsView(StatusSummaryMixin, LoginRequiredMixin, UpdateView):
+    model = Project
+    form_class = ProjectUpdateForm
     template_name = "projects/project_settings.html"
-    form_class = ServiceForm
-
-    def dispatch(self, request, *args, **kwargs):
-        self.project = get_object_or_404(Project, slug=self.kwargs["slug"])
-        return super().dispatch(request, *args, **kwargs)
+    slug_url_kwarg = "slug"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["project"] = self.project
-        services = self.project.services.all()
-
+        context["service_form"] = ServiceForm()
+        services = self.object.services.all()
         self.add_status_summary_to_services(services)
         context["services"] = services
         return context
 
     def form_valid(self, form):
-        service = form.save(commit=False)
-        service.project = self.project
-        service.save()
-        messages.success(self.request, f"Service '{service.name}' has been successfully created!")
-        return super().form_valid(form)
+        response = super().form_valid(form)
+        messages.success(self.request, f"Project '{self.object.name}' has been successfully updated!")
+        return response
 
     def get_success_url(self):
-        return reverse("project-settings", kwargs={"slug": self.project.slug})
+        return reverse("project-settings", kwargs={"slug": self.object.slug})
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        if "service_form" in request.POST:
+            service_form = ServiceForm(request.POST)
+            if service_form.is_valid():
+                service = service_form.save(commit=False)
+                service.project = self.object
+                service.save()
+                messages.success(request, f"Service '{service.name}' has been successfully created!")
+                return redirect(self.get_success_url())
+        else:
+            return super().post(request, *args, **kwargs)

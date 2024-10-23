@@ -14,7 +14,6 @@ class Profile(BaseModel):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     key = models.CharField(max_length=10, unique=True, default=generate_random_key)
 
-
     subscription = models.ForeignKey(
         "djstripe.Subscription",
         null=True,
@@ -51,7 +50,6 @@ class Profile(BaseModel):
         return latest_transition.to_state
 
 
-
 class ProfileStates(models.TextChoices):
     STRANGER = "stranger"
     SIGNED_UP = "signed_up"
@@ -60,8 +58,11 @@ class ProfileStates(models.TextChoices):
     CHURNED = "churned"
     ACCOUNT_DELETED = "account_deleted"
 
+
 class ProfileStateTransition(BaseModel):
-    profile = models.ForeignKey(Profile, null=True, blank=True, on_delete=models.SET_NULL, related_name="state_transitions")
+    profile = models.ForeignKey(
+        Profile, null=True, blank=True, on_delete=models.SET_NULL, related_name="state_transitions"
+    )
     from_state = models.CharField(max_length=255, choices=ProfileStates.choices)
     to_state = models.CharField(max_length=255, choices=ProfileStates.choices)
     backup_profile_id = models.IntegerField()
@@ -84,11 +85,11 @@ class BlogPost(BaseModel):
         return reverse("blog_post", kwargs={"slug": self.slug})
 
 
-
 class Project(BaseModel):
     profile = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name="projects")
     name = models.CharField(max_length=250, unique=True)
     slug = models.SlugField(max_length=250, unique=True)
+    url = models.URLField(blank=True)
     public = models.BooleanField(default=False)
     icon = models.ImageField(upload_to="project_icons/", blank=True)
 
@@ -99,45 +100,37 @@ class Project(BaseModel):
         return reverse("project-status-page", kwargs={"slug": self.slug})
 
 
-
 class Service(BaseModel):
     class ServiceType(models.TextChoices):
-        WEBSITE = 'WEBSITE', 'Website'
-        API = 'API', 'API'
+        WEBSITE = "WEBSITE", "Website"
+        API = "API", "API"
 
-    project = models.ForeignKey('Project', on_delete=models.CASCADE, related_name="services")
+    project = models.ForeignKey("Project", on_delete=models.CASCADE, related_name="services")
     name = models.CharField(max_length=250)
-    type = models.CharField(
-        max_length=20,
-        choices=ServiceType.choices,
-        default=ServiceType.WEBSITE
-    )
+    type = models.CharField(max_length=20, choices=ServiceType.choices, default=ServiceType.WEBSITE)
     url = models.URLField(max_length=500, blank=True)
     check_interval = models.PositiveIntegerField(default=5, help_text="Check interval in minutes")
     additional_data = models.JSONField(
-        blank=True,
-        null=True,
-        help_text="Additional data for service checks (e.g., auth headers, connection strings)"
+        blank=True, null=True, help_text="Additional data for service checks (e.g., auth headers, connection strings)"
     )
     is_public = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
 
     class Meta:
-        unique_together = ['project', 'name']
+        unique_together = ["project", "name"]
 
     def __str__(self):
         return f"{self.name} ({self.get_type_display()})"
 
 
-
 class ServiceStatus(BaseModel):
     class StatusChoices(models.TextChoices):
-        UP = 'UP', 'Up'
-        DOWN = 'DOWN', 'Down'
-        DEGRADED = 'DEGRADED', 'Degraded'
-        UNKNOWN = 'UNKNOWN', 'Unknown'
+        UP = "UP", "Up"
+        DOWN = "DOWN", "Down"
+        DEGRADED = "DEGRADED", "Degraded"
+        UNKNOWN = "UNKNOWN", "Unknown"
 
-    service = models.ForeignKey('Service', on_delete=models.CASCADE, related_name='statuses')
+    service = models.ForeignKey("Service", on_delete=models.CASCADE, related_name="statuses")
     status = models.CharField(max_length=20, choices=StatusChoices.choices, default=StatusChoices.UNKNOWN)
     response_time = models.FloatField(null=True, blank=True, help_text="Response time in milliseconds")
     status_code = models.IntegerField(null=True, blank=True)
@@ -145,8 +138,8 @@ class ServiceStatus(BaseModel):
     checked_at = models.DateTimeField(default=timezone.now)
 
     class Meta:
-        ordering = ['-checked_at']
-        get_latest_by = 'checked_at'
+        ordering = ["-checked_at"]
+        get_latest_by = "checked_at"
 
     def __str__(self):
         return f"{self.service.name} - {self.status} at {self.checked_at}"

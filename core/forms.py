@@ -1,7 +1,7 @@
 from allauth.account.forms import LoginForm, SignupForm
 from django import forms
 
-from core.models import Profile, Service
+from core.models import Profile, Project, Service
 from core.utils import DivErrorList
 
 
@@ -48,7 +48,14 @@ class ProfileUpdateForm(forms.ModelForm):
 class ServiceForm(forms.ModelForm):
     class Meta:
         model = Service
-        fields = ['name', 'type', 'url', 'check_interval', 'additional_data', 'is_public', 'is_active']
+        fields = ["name", "type", "url", "check_interval", "additional_data", "is_public", "is_active"]
         widgets = {
-            'additional_data': forms.Textarea(attrs={'rows': 4}),
+            "additional_data": forms.Textarea(attrs={"rows": 4}),
         }
+
+
+class ProjectUpdateForm(forms.ModelForm):
+    class Meta:
+        model = Project
+        fields = ["name", "slug", "url", "icon", "public"]
+        widgets = {"icon": forms.FileInput(attrs={"class": "block mt-1 w-full text-sm text-gray-900"})}

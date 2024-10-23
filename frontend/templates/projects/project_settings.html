@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 {% load webpack_loader static %}
 {% load widget_tweaks %}
 
@@ -8,10 +8,63 @@
 
 {% block content %}
   <div class="container px-4 py-8 mx-auto max-w-3xl bg-white lg:min-w-0 md:pt-10 lg:flex-1">
-    <div class="p-4 border-t border-b border-gray-200 sm:p-6 lg:p-8 xl:border-t-0">
+    <div class="p-4 text-center border-gray-200 sm:p-6 lg:p-8">
       <div class="flex justify-between items-center">
-        <h1 class="flex-1 pt-2 text-xl font-medium">{{ project.name }} Settings</h1>
+        <h1 class="flex-1 pt-2 text-2xl font-medium">{{ project.name }} Settings</h1>
       </div>
+    </div>
+
+    <!-- Project Update Form -->
+    <div class="p-6 mt-6 mb-8 bg-gray-50 rounded-lg">
+      <h3 class="mb-4 text-lg font-medium leading-6 text-gray-900">Project Details</h3>
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="grid grid-cols-6 gap-6">
+          <div class="col-span-6 sm:col-span-3">
+            {{ form.name.errors }}
+            <label for="{{ form.name.id_for_label }}" class="block text-sm font-medium text-gray-700">Project Name</label>
+            {% render_field form.name class="block mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" %}
+          </div>
+
+          <div class="col-span-6 sm:col-span-3">
+            {{ form.slug.errors }}
+            <label for="{{ form.slug.id_for_label }}" class="block text-sm font-medium text-gray-700">Project Slug</label>
+            {% render_field form.slug class="block mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" %}
+          </div>
+
+          <div class="col-span-6">
+            {{ form.url.errors }}
+            <label for="{{ form.url.id_for_label }}" class="block text-sm font-medium text-gray-700">Project URL</label>
+            {% render_field form.url class="block mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" %}
+          </div>
+
+          <div class="col-span-6">
+            {{ form.icon.errors }}
+            <label for="{{ form.icon.id_for_label }}" class="block text-sm font-medium text-gray-700">Project Icon</label>
+            {% if project.icon %}
+              <img src="{{ project.icon.url }}" alt="Current icon" class="mb-2 w-16 h-16">
+            {% endif %}
+            {{ form.icon }}
+          </div>
+
+          <div class="col-span-6">
+            <div class="flex items-start">
+              <div class="flex items-center h-5">
+                {% render_field form.public class="w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500" %}
+              </div>
+              <div class="ml-3 text-sm">
+                <label for="{{ form.public.id_for_label }}" class="font-medium text-gray-700">Public</label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-6 text-right">
+          <button type="submit" class="inline-flex justify-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md border border-transparent shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+            Update Project
+          </button>
+        </div>
+      </form>
     </div>
 
     <!-- Services Section -->
@@ -57,46 +110,46 @@
     <!-- Add New Service Form -->
     <div class="p-6 mt-6 mb-8 bg-gray-50 rounded-lg">
       <h3 class="mb-4 text-lg font-medium leading-6 text-gray-900">Add New Service</h3>
-      <form method="post">
+      <form method="post" name="service_form">
         {% csrf_token %}
         <div class="grid grid-cols-6 gap-6">
           <div class="col-span-6 sm:col-span-3">
-            {{ form.name.errors }}
-            <label for="{{ form.name.id_for_label }}" class="block text-sm font-medium text-gray-700">Service Name</label>
-            {% render_field form.name class="block mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" %}
+            {{ service_form.name.errors }}
+            <label for="{{ service_form.name.id_for_label }}" class="block text-sm font-medium text-gray-700">Service Name</label>
+            {% render_field service_form.name class="block mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" %}
           </div>
 
           <div class="col-span-6 sm:col-span-3">
-            {{ form.type.errors }}
-            <label for="{{ form.type.id_for_label }}" class="block text-sm font-medium text-gray-700">Service Type</label>
-            {% render_field form.type class="block mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" %}
+            {{ service_form.type.errors }}
+            <label for="{{ service_form.type.id_for_label }}" class="block text-sm font-medium text-gray-700">Service Type</label>
+            {% render_field service_form.type class="block mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" %}
           </div>
 
           <div class="col-span-6">
-            {{ form.url.errors }}
-            <label for="{{ form.url.id_for_label }}" class="block text-sm font-medium text-gray-700">URL</label>
-            {% render_field form.url class="block mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" %}
+            {{ service_form.url.errors }}
+            <label for="{{ service_form.url.id_for_label }}" class="block text-sm font-medium text-gray-700">URL</label>
+            {% render_field service_form.url class="block mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" %}
           </div>
 
           <div class="col-span-6 sm:col-span-3">
-            {{ form.check_interval.errors }}
-            <label for="{{ form.check_interval.id_for_label }}" class="block text-sm font-medium text-gray-700">Check Interval (minutes)</label>
-            {% render_field form.check_interval class="block mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" %}
+            {{ service_form.check_interval.errors }}
+            <label for="{{ service_form.check_interval.id_for_label }}" class="block text-sm font-medium text-gray-700">Check Interval (minutes)</label>
+            {% render_field service_form.check_interval class="block mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" %}
           </div>
 
           <div class="col-span-6">
-            {{ form.additional_data.errors }}
-            <label for="{{ form.additional_data.id_for_label }}" class="block text-sm font-medium text-gray-700">Additional Data</label>
-            {% render_field form.additional_data class="block mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" rows="4" %}
+            {{ service_form.additional_data.errors }}
+            <label for="{{ service_form.additional_data.id_for_label }}" class="block text-sm font-medium text-gray-700">Additional Data</label>
+            {% render_field service_form.additional_data class="block mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" rows="4" %}
           </div>
 
           <div class="col-span-6 sm:col-span-3">
             <div class="flex items-start">
               <div class="flex items-center h-5">
-                {% render_field form.is_public class="w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500" %}
+                {% render_field service_form.is_public class="w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500" %}
               </div>
               <div class="ml-3 text-sm">
-                <label for="{{ form.is_public.id_for_label }}" class="font-medium text-gray-700">Public</label>
+                <label for="{{ service_form.is_public.id_for_label }}" class="font-medium text-gray-700">Public</label>
               </div>
             </div>
           </div>
@@ -104,10 +157,10 @@
           <div class="col-span-6 sm:col-span-3">
             <div class="flex items-start">
               <div class="flex items-center h-5">
-                {% render_field form.is_active class="w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500" %}
+                {% render_field service_form.is_active class="w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500" %}
               </div>
               <div class="ml-3 text-sm">
-                <label for="{{ form.is_active.id_for_label }}" class="font-medium text-gray-700">Active</label>
+                <label for="{{ service_form.is_active.id_for_label }}" class="font-medium text-gray-700">Active</label>
               </div>
             </div>
           </div>
