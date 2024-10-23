@@ -74,31 +74,20 @@
         <ul class="divide-y divide-gray-200">
           {% for service in services %}
             <li class="py-4">
-              <div>
                 <div class="flex flex-row justify-between">
-                  <p class="text-sm font-medium text-gray-900 truncate">
+                  <p class="flex items-center text-xl font-medium text-gray-900 truncate">
+                    <span class="
+                      rounded-full w-4 h-4 mr-4 px-2 text-xs font-semibold leading-5
+                      {% if service.is_active %}
+                        bg-green-700
+                      {% else %}
+                        bg-red-700
+                      {% endif %}
+                    ">
+                    </span>
                     {{ service.name }}
                   </p>
-                  {% for service in services %}
-                  <div class="flex overflow-hidden space-x-0.5">
-                    {% for status in service.status_summary %}
-                      <div class="w-1 h-4
-                        {% if status == 'up' %}
-                          bg-green-500
-                        {% elif status == 'down' %}
-                          bg-red-500
-                        {% else %}
-                          bg-gray-300
-                        {% endif %}">
-                      </div>
-                    {% endfor %}
-                  </div>
-                  {% endfor %}
-                  <p class="inline-flex px-2 text-xs font-semibold leading-5 text-green-800 bg-green-100 rounded-full">
-                    {% if service.is_active %}Active{% else %}Inactive{% endif %}
-                  </p>
                 </div>
-              </div>
             </li>
           {% endfor %}
         </ul>
