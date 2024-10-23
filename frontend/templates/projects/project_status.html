@@ -70,7 +70,7 @@
         <!-- Large Screen -->
         <div class="hidden lg:flex lg:justify-center lg:items-center lg:w-full"">
           <div class="flex gap-x-12 items-center">
-            <a href="{% url 'home' %}" class="flex flex-col justify-between items-center p-1.5 -m-1.5 space-x-2 space-y-2">
+            <a href="{{ project.url }}" class="flex flex-col justify-between items-center p-1.5 -m-1.5 space-x-2 space-y-2">
               <img class="object-cover w-auto h-12" src="{{ project.icon.url }}" alt="{{ project.name }} icon">
               <p class="text-xl font-semibold text-gray-900">
                 {{ project.name }}
@@ -117,7 +117,7 @@
             {% for service in services %}
               <div class="p-6 mb-6 rounded border border-gray-200">
                 <div class="flex items-center mb-2">
-                  <span class="mr-4 w-4 h-4
+                  <span class="mr-4 w-4 h-4 rounded
                     {% if service.current_status == 'up' %}
                       bg-green-500
                     {% elif service.current_status == 'down' %}
@@ -145,42 +145,121 @@
                     </div>
                   {% endfor %}
                 </div>
+
+                <div class="mt-4">
+                  <h4 class="mb-2 text-sm font-medium text-gray-700">Average Response Time (ms)</h4>
+                  <div
+                    class="w-full"
+                    data-controller="response-time-graph"
+                    data-response-time-graph-data-value='{{ service.response_time_data|safe }}'
+                  ></div>
+                </div>
+
               </div>
             {% endfor %}
           </div>
 
-          <!-- Active Incidents and Recently Resolved -->
           <div class="lg:w-1/2">
             <div class="mb-8">
               <h3 class="mb-4 text-xl font-semibold">Active Incidents</h3>
               {% if active_incidents %}
-                {% for incident in active_incidents %}
-                  <div class="p-4 mb-4 bg-red-100 rounded-lg">
-                    <h4 class="font-medium text-red-800">{{ incident.title }}</h4>
-                    <p class="text-sm text-red-700">{{ incident.description }}</p>
-                    <p class="mt-2 text-xs text-red-600">Started: {{ incident.start_time|date:"F j, Y, g:i a" }}</p>
-                  </div>
-                {% endfor %}
+                  {% for status in active_incidents %}
+                      <div class="p-4 mb-4 bg-red-50 rounded-lg border border-red-200">
+                          <div class="flex justify-between items-center mb-2">
+                              <h4 class="font-medium text-red-900">{{ status.service.name }}</h4>
+                              <span class="px-2 py-1 text-xs font-medium text-red-800 bg-red-100 rounded-full">
+                                  {% if status.status_code %}
+                                      Status: {{ status.status_code }}
+                                  {% else %}
+                                      Down
+                                  {% endif %}
+                              </span>
+                          </div>
+
+                          {% if status.status_code %}
+                              <div class="mb-2">
+                                  <span class="text-sm font-medium text-red-800">Status Code:</span>
+                                  <span class="text-sm text-red-700">{{ status.status_code }}</span>
+                              </div>
+                          {% endif %}
+
+                          {% if status.error_message %}
+                              <div class="mb-3">
+                                  <span class="text-sm font-medium text-red-800">Error:</span>
+                                  <div class="p-2 mt-1 text-sm text-red-700 break-words bg-red-100 rounded">
+                                      {{ status.error_message }}
+                                  </div>
+                              </div>
+                          {% endif %}
+
+                          <div class="flex items-center text-xs text-red-600">
+                              <svg class="mr-1.5 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                              </svg>
+                              Down since: {{ status.checked_at|date:"F j, Y, g:i a" }}
+                          </div>
+                      </div>
+                  {% endfor %}
               {% else %}
-                <p class="text-gray-600">No active incidents</p>
+                  <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                      <div class="flex items-center text-gray-600">
+                          <svg class="mr-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                          </svg>
+                          No active incidents
+                      </div>
+                  </div>
               {% endif %}
             </div>
 
             <div>
               <h3 class="mb-4 text-xl font-semibold">Recently Resolved</h3>
               {% if recently_resolved %}
-                {% for incident in recently_resolved %}
-                  <div class="p-4 mb-4 bg-green-100 rounded-lg">
-                    <h4 class="font-medium text-green-800">{{ incident.title }}</h4>
-                    <p class="text-sm text-green-700">{{ incident.description }}</p>
-                    <p class="mt-2 text-xs text-green-600">Resolved: {{ incident.resolution_time|date:"F j, Y, g:i a" }}</p>
-                  </div>
-                {% endfor %}
+                  {% for status in recently_resolved %}
+                      <div class="p-4 mb-4 bg-green-50 rounded-lg border border-green-200">
+                          <div class="flex justify-between items-center mb-2">
+                              <h4 class="font-medium text-green-900">{{ status.service.name }}</h4>
+                              <span class="px-2 py-1 text-xs font-medium text-green-800 bg-green-100 rounded-full">
+                                  Resolved
+                              </span>
+                          </div>
+
+                          {% if status.status_code %}
+                              <div class="mb-2">
+                                  <span class="text-sm font-medium text-green-800">Status Code:</span>
+                                  <span class="text-sm text-green-700">{{ status.status_code }}</span>
+                              </div>
+                          {% endif %}
+
+                          {% if status.error_message %}
+                              <div class="mb-3">
+                                  <span class="text-sm font-medium text-green-800">Error:</span>
+                                  <div class="p-2 mt-1 text-sm text-green-700 break-words bg-green-100 rounded">
+                                      {{ status.error_message }}
+                                  </div>
+                              </div>
+                          {% endif %}
+
+                          <div class="flex items-center text-xs text-green-600">
+                              <svg class="mr-1.5 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                              </svg>
+                              Occured on: {{ status.checked_at|date:"F j, Y, g:i a" }}
+                          </div>
+                      </div>
+                  {% endfor %}
               {% else %}
-                <p class="text-gray-600">No recently resolved incidents</p>
+                  <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                      <div class="flex items-center text-gray-600">
+                          <svg class="mr-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                          </svg>
+                          No recently resolved incidents
+                      </div>
+                  </div>
               {% endif %}
             </div>
-          </div>
+        </div>
         </div>
       </div>
     </div>

@@ -31,6 +31,14 @@
       </div>
 
       <div>
+        {{ form.url.errors | safe }}
+        <label for="{{ form.url.id_for_label }}" class="block text-sm font-medium text-gray-700">Project URL</label>
+        <div class="mt-1">
+          {% render_field form.url class="block px-3 py-2 w-full placeholder-gray-400 rounded-md border border-gray-300 shadow-sm appearance-none focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm" placeholder="Enter project URL" %}
+        </div>
+      </div>
+
+      <div>
         {{ form.icon.errors | safe }}
         <label for="{{ form.icon.id_for_label }}" class="block text-sm font-medium text-gray-700">Project Icon</label>
         <div class="mt-1">
