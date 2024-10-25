@@ -114,7 +114,7 @@
             {% render_field service_form.type class="block mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" data-action="change->service-form#toggleApiFields" %}
           </div>
 
-          <div class="col-span-6">
+          <div class="col-span-6 sm:col-span-3">
             {{ service_form.url.errors }}
             <label for="{{ service_form.url.id_for_label }}" class="block text-sm font-medium text-gray-700">URL</label>
             {% render_field service_form.url class="block mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" %}

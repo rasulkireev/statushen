@@ -14,7 +14,7 @@ from django.views.generic import CreateView, DetailView, ListView, TemplateView,
 from djstripe import models as djstripe_models
 
 from core.forms import ProfileUpdateForm, ProjectUpdateForm, ServiceForm
-from core.models import BlogPost, Profile, Project, Service
+from core.models import BlogPost, Profile, Project
 from core.utils import check_if_profile_has_pro_subscription
 from core.views_utils import StatusSummaryMixin
 from statushen.utils import get_statushen_logger
@@ -198,6 +198,9 @@ class ProjectStatusPageView(StatusSummaryMixin, DetailView):
 
         self.add_status_summary_to_services(services, days=1, number_of_sticks=45)
         context["project_overall_status"] = self.get_overall_project_status(services, days=90, number_of_sticks=90)
+        context["project_overall_status_mobile"] = self.get_overall_project_status(
+            services, days=90, number_of_sticks=40
+        )
 
         for service in services:
             service.response_time_data = self.get_service_response_time_data(service)
@@ -241,15 +244,6 @@ class ProjectSettingsView(StatusSummaryMixin, LoginRequiredMixin, UpdateView):
             if service_form.is_valid():
                 service = service_form.save(commit=False)
                 service.project = self.object
-
-                # Clean up API-specific fields if the service type is not API
-                if service.type != Service.ServiceType.API:
-                    service.http_method = None
-                    service.request_headers = None
-                    service.request_body = None
-                    service.expected_status_code = None
-                    service.expected_response_content = None
-
                 service.save()
                 messages.success(request, f"Service '{service.name}' has been successfully created!")
                 return redirect(self.get_success_url())
