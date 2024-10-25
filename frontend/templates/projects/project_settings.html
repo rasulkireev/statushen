@@ -99,7 +99,7 @@
     <!-- Add New Service Form -->
     <div class="p-6 mt-6 mb-8 bg-gray-50 rounded-lg">
       <h3 class="mb-4 text-lg font-medium leading-6 text-gray-900">Add New Service</h3>
-      <form method="post" name="service_form">
+      <form method="post" name="service_form" data-controller="service-form">
         {% csrf_token %}
         <div class="grid grid-cols-6 gap-6">
           <div class="col-span-6 sm:col-span-3">
@@ -111,10 +111,10 @@
           <div class="col-span-6 sm:col-span-3">
             {{ service_form.type.errors }}
             <label for="{{ service_form.type.id_for_label }}" class="block text-sm font-medium text-gray-700">Service Type</label>
-            {% render_field service_form.type class="block mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" %}
+            {% render_field service_form.type class="block mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" data-action="change->service-form#toggleApiFields" %}
           </div>
 
-          <div class="col-span-6">
+          <div class="col-span-6 sm:col-span-3">
             {{ service_form.url.errors }}
             <label for="{{ service_form.url.id_for_label }}" class="block text-sm font-medium text-gray-700">URL</label>
             {% render_field service_form.url class="block mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" %}
@@ -124,12 +124,6 @@
             {{ service_form.check_interval.errors }}
             <label for="{{ service_form.check_interval.id_for_label }}" class="block text-sm font-medium text-gray-700">Check Interval (minutes)</label>
             {% render_field service_form.check_interval class="block mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" %}
-          </div>
-
-          <div class="col-span-6">
-            {{ service_form.additional_data.errors }}
-            <label for="{{ service_form.additional_data.id_for_label }}" class="block text-sm font-medium text-gray-700">Additional Data</label>
-            {% render_field service_form.additional_data class="block mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" rows="4" %}
           </div>
 
           <div class="col-span-6 sm:col-span-3">
@@ -152,6 +146,37 @@
                 <label for="{{ service_form.is_active.id_for_label }}" class="font-medium text-gray-700">Active</label>
               </div>
             </div>
+          </div>
+
+          <!-- API-specific fields -->
+          <div class="col-span-6 api-field" data-service-form-target="apiField" style="display: none;">
+            {{ service_form.http_method.errors }}
+            <label for="{{ service_form.http_method.id_for_label }}" class="block text-sm font-medium text-gray-700">HTTP Method</label>
+            {% render_field service_form.http_method class="block mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" %}
+          </div>
+
+          <div class="col-span-6 api-field" data-service-form-target="apiField" style="display: none;">
+            {{ service_form.request_headers.errors }}
+            <label for="{{ service_form.request_headers.id_for_label }}" class="block text-sm font-medium text-gray-700">Request Headers (JSON, Optional)</label>
+            {% render_field service_form.request_headers class="block mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" %}
+          </div>
+
+          <div class="col-span-6 api-field" data-service-form-target="apiField" style="display: none;">
+            {{ service_form.request_body.errors }}
+            <label for="{{ service_form.request_body.id_for_label }}" class="block text-sm font-medium text-gray-700">Request Body (Optional)</label>
+            {% render_field service_form.request_body class="block mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" %}
+          </div>
+
+          <div class="col-span-6 sm:col-span-3 api-field" data-service-form-target="apiField" style="display: none;">
+            {{ service_form.expected_status_code.errors }}
+            <label for="{{ service_form.expected_status_code.id_for_label }}" class="block text-sm font-medium text-gray-700">Expected Status Code (Required)</label>
+            {% render_field service_form.expected_status_code class="block mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" %}
+          </div>
+
+          <div class="col-span-6 api-field" data-service-form-target="apiField" style="display: none;">
+            {{ service_form.expected_response_content.errors }}
+            <label for="{{ service_form.expected_response_content.id_for_label }}" class="block text-sm font-medium text-gray-700">Expected Response Content (Optional)</label>
+            {% render_field service_form.expected_response_content class="block mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" %}
           </div>
         </div>
 

@@ -93,7 +93,22 @@
               Last 90 days
             </span>
           </div>
-          <div class="flex space-x-0.5 w-full h-6">
+          <div class="flex space-x-0.5 w-full h-6 md:hidden">
+            {% for status in project_overall_status_mobile %}
+              <div class="flex-grow h-full rounded-sm
+                {% if status == 'up' %}
+                  bg-green-500
+                {% elif status == 'down' %}
+                  bg-red-500
+                {% elif status == 'degraded' %}
+                  bg-yellow-500
+                {% else %}
+                  bg-gray-300
+                {% endif %}">
+              </div>
+            {% endfor %}
+          </div>
+          <div class="hidden space-x-0.5 w-full h-6 md:flex">
             {% for status in project_overall_status %}
               <div class="flex-grow h-full rounded-sm
                 {% if status == 'up' %}
@@ -113,9 +128,9 @@
         <div class="mt-10 lg:flex lg:space-x-6">
           <!-- System Status (24 hours) -->
           <div class="lg:w-1/2">
-            <h3 class="mb-6 text-lg font-semibold">System Status (Last 24 Hours)</h3>
+            <h3 class="mb-4 text-lg font-semibold">System Status (Last 24 Hours)</h3>
             {% for service in services %}
-              <div class="p-6 mb-6 rounded border border-gray-200">
+              <div class="p-6 mb-6 rounded-lg border border-gray-200">
                 <div class="flex items-center mb-2">
                   <span class="mr-4 w-4 h-4 rounded
                     {% if service.current_status == 'up' %}

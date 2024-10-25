@@ -198,6 +198,9 @@ class ProjectStatusPageView(StatusSummaryMixin, DetailView):
 
         self.add_status_summary_to_services(services, days=1, number_of_sticks=45)
         context["project_overall_status"] = self.get_overall_project_status(services, days=90, number_of_sticks=90)
+        context["project_overall_status_mobile"] = self.get_overall_project_status(
+            services, days=90, number_of_sticks=40
+        )
 
         for service in services:
             service.response_time_data = self.get_service_response_time_data(service)

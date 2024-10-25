@@ -1,4 +1,6 @@
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
+from django.core.validators import URLValidator
 from django.db import models
 from django.urls import reverse
 from django.utils import timezone
@@ -105,14 +107,28 @@ class Service(BaseModel):
         WEBSITE = "WEBSITE", "Website"
         API = "API", "API"
 
+    class HttpMethod(models.TextChoices):
+        GET = "GET", "GET"
+        POST = "POST", "POST"
+        PUT = "PUT", "PUT"
+        PATCH = "PATCH", "PATCH"
+        DELETE = "DELETE", "DELETE"
+
     project = models.ForeignKey("Project", on_delete=models.CASCADE, related_name="services")
     name = models.CharField(max_length=250)
     type = models.CharField(max_length=20, choices=ServiceType.choices, default=ServiceType.WEBSITE)
     url = models.URLField(max_length=500, blank=True)
     check_interval = models.PositiveIntegerField(default=5, help_text="Check interval in minutes")
-    additional_data = models.JSONField(
-        blank=True, null=True, help_text="Additional data for service checks (e.g., auth headers, connection strings)"
+
+    # API-specific fields
+    http_method = models.CharField(max_length=10, choices=HttpMethod.choices, default=HttpMethod.GET)
+    request_headers = models.JSONField(blank=True, null=True, help_text="Headers to be sent with the API request")
+    request_body = models.TextField(blank=True, null=True, help_text="Body of the API request")
+    expected_status_code = models.PositiveIntegerField(blank=True, null=True, help_text="Expected HTTP status code")
+    expected_response_content = models.TextField(
+        blank=True, null=True, help_text="Expected content in the API response"
     )
+
     is_public = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
 
@@ -121,6 +137,26 @@ class Service(BaseModel):
 
     def __str__(self):
         return f"{self.name} ({self.get_type_display()})"
+
+    def clean(self):
+        super().clean()
+        if self.type == self.ServiceType.API:
+            if not self.url:
+                raise ValidationError("URL is required for API services")
+            URLValidator()(self.url)
+
+    def get_check_params(self):
+        if self.type == self.ServiceType.API:
+            return {
+                "url": self.url,
+                "method": self.http_method,
+                "headers": self.request_headers or {},
+                "body": self.request_body,
+                "expected_status_code": self.expected_status_code,
+                "expected_response_content": self.expected_response_content,
+            }
+        # Add logic for other service types if needed
+        return {}
 
 
 class ServiceStatus(BaseModel):
@@ -134,7 +170,7 @@ class ServiceStatus(BaseModel):
     status = models.CharField(max_length=20, choices=StatusChoices.choices, default=StatusChoices.UNKNOWN)
     response_time = models.FloatField(null=True, blank=True, help_text="Response time in milliseconds")
     status_code = models.IntegerField(null=True, blank=True)
-    error_message = models.TextField(blank=True)
+    error_message = models.TextField(blank=True, null=True)
     checked_at = models.DateTimeField(default=timezone.now)
 
     class Meta:
