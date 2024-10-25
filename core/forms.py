@@ -48,10 +48,32 @@ class ProfileUpdateForm(forms.ModelForm):
 class ServiceForm(forms.ModelForm):
     class Meta:
         model = Service
-        fields = ["name", "type", "url", "check_interval", "additional_data", "is_public", "is_active"]
+        fields = [
+            "name",
+            "type",
+            "url",
+            "check_interval",
+            "is_public",
+            "is_active",
+            "http_method",
+            "request_headers",
+            "request_body",
+            "expected_status_code",
+            "expected_response_content",
+        ]
         widgets = {
-            "additional_data": forms.Textarea(attrs={"rows": 4}),
+            "request_headers": forms.Textarea(attrs={"rows": 3}),
+            "request_body": forms.Textarea(attrs={"rows": 3}),
+            "expected_response_content": forms.Textarea(attrs={"rows": 3}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["http_method"].required = False
+        self.fields["request_headers"].required = False
+        self.fields["request_body"].required = False
+        self.fields["expected_status_code"].required = False
+        self.fields["expected_response_content"].required = False
 
 
 class ProjectUpdateForm(forms.ModelForm):
