@@ -157,25 +157,25 @@
 
           <div class="col-span-6 api-field" data-service-form-target="apiField" style="display: none;">
             {{ service_form.request_headers.errors }}
-            <label for="{{ service_form.request_headers.id_for_label }}" class="block text-sm font-medium text-gray-700">Request Headers (JSON)</label>
+            <label for="{{ service_form.request_headers.id_for_label }}" class="block text-sm font-medium text-gray-700">Request Headers (JSON, Optional)</label>
             {% render_field service_form.request_headers class="block mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" %}
           </div>
 
           <div class="col-span-6 api-field" data-service-form-target="apiField" style="display: none;">
             {{ service_form.request_body.errors }}
-            <label for="{{ service_form.request_body.id_for_label }}" class="block text-sm font-medium text-gray-700">Request Body</label>
+            <label for="{{ service_form.request_body.id_for_label }}" class="block text-sm font-medium text-gray-700">Request Body (Optional)</label>
             {% render_field service_form.request_body class="block mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" %}
           </div>
 
           <div class="col-span-6 sm:col-span-3 api-field" data-service-form-target="apiField" style="display: none;">
             {{ service_form.expected_status_code.errors }}
-            <label for="{{ service_form.expected_status_code.id_for_label }}" class="block text-sm font-medium text-gray-700">Expected Status Code</label>
+            <label for="{{ service_form.expected_status_code.id_for_label }}" class="block text-sm font-medium text-gray-700">Expected Status Code (Required)</label>
             {% render_field service_form.expected_status_code class="block mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" %}
           </div>
 
           <div class="col-span-6 api-field" data-service-form-target="apiField" style="display: none;">
             {{ service_form.expected_response_content.errors }}
-            <label for="{{ service_form.expected_response_content.id_for_label }}" class="block text-sm font-medium text-gray-700">Expected Response Content</label>
+            <label for="{{ service_form.expected_response_content.id_for_label }}" class="block text-sm font-medium text-gray-700">Expected Response Content (Optional)</label>
             {% render_field service_form.expected_response_content class="block mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" %}
           </div>
         </div>
