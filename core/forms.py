@@ -72,7 +72,7 @@ class ServiceForm(forms.ModelForm):
         self.fields["http_method"].required = False
         self.fields["request_headers"].required = False
         self.fields["request_body"].required = False
-        self.fields["expected_status_code"].required = False
+        self.fields["expected_status_code"].required = True
         self.fields["expected_response_content"].required = False
 
 
