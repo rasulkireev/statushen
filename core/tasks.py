@@ -15,7 +15,7 @@ def add_email_to_buttondown(email, tag):
         "email_address": str(email),
         "metadata": {"source": tag},
         "tags": [tag],
-        "referrer_url": "https://statushen.app",
+        "referrer_url": "https://statushen.com",
         "subscriber_type": "regular",
     }
 

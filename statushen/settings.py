@@ -12,11 +12,10 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 
 import os
 from pathlib import Path
+
 import environ
-import structlog
 import sentry_sdk
-
-
+import structlog
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -36,7 +35,7 @@ ENVIRONMENT = env("ENVIRONMENT")
 SECRET_KEY = env("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env('DEBUG')
+DEBUG = env("DEBUG")
 
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS")
 CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS")
@@ -54,12 +53,10 @@ INSTALLED_APPS = [
     "widget_tweaks",
     "anymail",
     "djstripe",
-
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
     "allauth.socialaccount.providers.github",
-
     "django_q",
     "django_extensions",
     "core.apps.CoreConfig",
@@ -153,14 +150,14 @@ STORAGES = {
     "default": {
         "BACKEND": "statushen.storages.CustomS3Boto3Storage",
         "OPTIONS": {
-          "bucket_name": bucket_name,
-          "default_acl": "public-read",
-          "region_name": "eu-east-1",
-          "endpoint_url": env("AWS_S3_ENDPOINT_URL"),
-          "access_key": env("AWS_ACCESS_KEY_ID"),
-          "secret_key": env("AWS_SECRET_ACCESS_KEY"),
-          "querystring_auth": False,
-          "file_overwrite": False,
+            "bucket_name": bucket_name,
+            "default_acl": "public-read",
+            "region_name": "eu-east-1",
+            "endpoint_url": env("AWS_S3_ENDPOINT_URL"),
+            "access_key": env("AWS_ACCESS_KEY_ID"),
+            "secret_key": env("AWS_SECRET_ACCESS_KEY"),
+            "querystring_auth": False,
+            "file_overwrite": False,
         },
     },
     "staticfiles": {
@@ -214,15 +211,14 @@ SOCIALACCOUNT_PROVIDERS = {
             "secret": env("GITHUB_CLIENT_SECRET"),
         },
     },
-
 }
 
 ANYMAIL = {
     "MAILGUN_API_KEY": env("MAILGUN_API_KEY"),
-    "MAILGUN_SENDER_DOMAIN": "mg.statushen.app",
+    "MAILGUN_SENDER_DOMAIN": "mg.statushen.com",
 }
-DEFAULT_FROM_EMAIL = "Rasul from StatusHen <hello@statushen.app>"
-SERVER_EMAIL = "StatusHen Errors <error@statushen.app>"
+DEFAULT_FROM_EMAIL = "Rasul from StatusHen <hello@statushen.com>"
+SERVER_EMAIL = "StatusHen Errors <error@statushen.com>"
 
 if DEBUG:
     EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
@@ -314,7 +310,7 @@ if ENVIRONMENT == "prod" and SENTRY_DSN:
 
 POSTHOG_API_KEY = env("POSTHOG_API_KEY")
 
-BUTTONDOWN_API_KEY=env("BUTTONDOWN_API_KEY")
+BUTTONDOWN_API_KEY = env("BUTTONDOWN_API_KEY")
 
 STRIPE_LIVE_SECRET_KEY = env("STRIPE_LIVE_SECRET_KEY")
 STRIPE_TEST_SECRET_KEY = env("STRIPE_TEST_SECRET_KEY")
