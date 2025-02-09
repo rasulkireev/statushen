@@ -58,7 +58,11 @@
         <div class="flex justify-center items-center w-full lg:hidden">
           <div class="flex flex-col justify-start space-y-1">
             <a href="{% url 'home' %}" class="flex flex-col justify-center items-center p-1.5 -m-1.5 mb-2 space-x-2 space-y-2">
-              <img class="object-cover w-auto h-8" src="{{ project.icon.url }}" alt="{{ project.name }} icon">
+              {% if project.icon %}
+                <img class="object-cover w-auto h-8" src="{{ project.icon_url }}" alt="{{ project.name }} icon">
+              {% else %}
+                <img class="object-cover w-auto h-8" src="{% static 'vendors/images/logo.png' %}" alt="{{ project.name }} icon">
+              {% endif %}
               <p class="text-xl font-semibold text-gray-900">
                 {{ project.name }}
                 <span class="text-green-700">Status</span>
@@ -68,10 +72,14 @@
         </div>
 
         <!-- Large Screen -->
-        <div class="hidden lg:flex lg:justify-center lg:items-center lg:w-full"">
+        <div class="hidden lg:flex lg:justify-center lg:items-center lg:w-full">
           <div class="flex gap-x-12 items-center">
             <a href="{{ project.url }}" class="flex flex-col justify-between items-center p-1.5 -m-1.5 space-x-2 space-y-2">
-              <img class="object-cover w-auto h-12" src="{{ project.icon.url }}" alt="{{ project.name }} icon">
+              {% if project.icon %}
+                <img class="object-cover w-auto h-12" src="{{ project.icon_url }}" alt="{{ project.name }} icon">
+              {% else %}
+                <img class="object-cover w-auto h-12" src="{% static 'vendors/images/logo.png' %}" alt="{{ project.name }} icon">
+              {% endif %}
               <p class="text-xl font-semibold text-gray-900">
                 {{ project.name }}
                 <span class="text-green-700">Status</span>

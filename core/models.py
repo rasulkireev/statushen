@@ -2,6 +2,7 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator
 from django.db import models
+from django.templatetags.static import static
 from django.urls import reverse
 from django.utils import timezone
 
@@ -93,13 +94,19 @@ class Project(BaseModel):
     slug = models.SlugField(max_length=250, unique=True)
     url = models.URLField(blank=True)
     public = models.BooleanField(default=False)
-    icon = models.ImageField(upload_to="project_icons/", blank=True)
+    icon = models.ImageField(upload_to="project_icons/", blank=True, null=True)
 
     def __str__(self):
         return self.name
 
     def get_absolute_url(self):
         return reverse("project-status-page", kwargs={"slug": self.slug})
+
+    @property
+    def icon_url(self):
+        if self.icon and hasattr(self.icon, "url"):
+            return self.icon.url
+        return static("vendors/images/logo.png")
 
 
 class Service(BaseModel):
